@@ -249,7 +249,8 @@ if __name__ == "__main__":
     print(f"\n--- My Query 2: {my_query_2} ---")
     response_2 = agent.run(my_query_2, reset=False)
     print(response_2)
-    # Comment: This should trigger tool use because get_top_n_countries directly handles ranking countries by a column for a year.
+    # Comment: This should trigger tool use because get_top_n_countries directly handles ranking countries by a column for a year. 
+    
 
 
 # --- Reflection ---

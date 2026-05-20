@@ -596,6 +596,7 @@ except Exception as e:
     print("\n--- Lesson 04 Q7-Q8 skipped ---")
     print("smolagents section could not run. Install smolagents and check your OpenAI API key.")
     print("Error:", e)
+    
 
 
 # Q9
@@ -612,4 +613,4 @@ except Exception as e:
 # unsafe operations if not properly restricted.
 #
 # A ToolCallingAgent is more limited and therefore safer because it can only call
-# the tools explicitly provided by the developer.
+# the tools explicitly provided by the developer. 
