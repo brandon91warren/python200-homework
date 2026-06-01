@@ -11,9 +11,10 @@ from smolagents import CodeAgent, OpenAIServerModel, tool
 
 api_key = os.getenv("OPENAI_API_KEY")
 
-DATA_PATH = Path("../assignments_01/outputs/merged_happiness.csv")
+DATA_PATH = Path("outputs/merged_happiness.csv")
 FALLBACK_DIR = Path("happiness_project")
 OUTPUT_DIR = Path("outputs")
+OUTPUT_DIR.mkdir(exist_ok=True)
 
 df = None
 
@@ -61,7 +62,7 @@ def load_happiness_data() -> dict:
                 "economy_gdp_per_capita": "gdp_per_capita",
                 "gdp_per_capita": "gdp_per_capita",
                 "regional_indicator": "region",
-                "region": "region"
+                "region": "region",
             }
 
             temp_df = temp_df.rename(columns=rename_map)
@@ -84,8 +85,8 @@ def load_happiness_data() -> dict:
     return {
         "shape": df.shape,
         "columns": list(df.columns),
-        "data": df.to_dict(orient="records")
     }
+
 
 @tool
 def summarize_column(column: str) -> dict:
@@ -130,13 +131,16 @@ def compute_correlation(col1: str, col2: str) -> dict:
 
     clean_df = df[[col1, col2]].dropna()
 
+    if clean_df.empty:
+        return {"error": "No valid rows available after removing missing values."}
+
     try:
         r, p = pearsonr(clean_df[col1], clean_df[col2])
         return {
             "col1": col1,
             "col2": col2,
             "pearson_r": round(float(r), 4),
-            "p_value": round(float(p), 4)
+            "p_value": round(float(p), 4),
         }
     except Exception as e:
         return {"error": str(e)}
@@ -181,7 +185,7 @@ def get_top_n_countries(column: str, year: int, n: int = 5) -> dict:
     return {
         "year": year,
         "column": column,
-        "top_countries": top_rows.to_dict(orient="records")
+        "top_countries": top_rows.to_dict(orient="records"),
     }
 
 
@@ -197,7 +201,7 @@ Be concise and student-friendly in your responses.
 def build_agent():
     model = OpenAIServerModel(
         api_key=api_key,
-        model_id="gpt-4o-mini"
+        model_id="gpt-4o-mini",
     )
 
     return CodeAgent(
@@ -205,7 +209,7 @@ def build_agent():
             load_happiness_data,
             summarize_column,
             compute_correlation,
-            get_top_n_countries
+            get_top_n_countries,
         ],
         model=model,
         instructions=SYSTEM_PROMPT,
@@ -215,15 +219,13 @@ def build_agent():
             "matplotlib.pyplot",
             "scipy.stats",
             "os",
-            "pathlib"
+            "pathlib",
         ],
-        max_steps=8
+        max_steps=8,
     )
 
 
 if __name__ == "__main__":
-    OUTPUT_DIR.mkdir(parents=True, exist_ok=True)
-
     agent = build_agent()
 
     queries = [
@@ -249,8 +251,7 @@ if __name__ == "__main__":
     print(f"\n--- My Query 2: {my_query_2} ---")
     response_2 = agent.run(my_query_2, reset=False)
     print(response_2)
-    # Comment: This should trigger tool use because get_top_n_countries directly handles ranking countries by a column for a year. 
-    
+    # Comment: This should trigger tool use because get_top_n_countries directly handles ranking countries by a column for a year.
 
 
 # --- Reflection ---
@@ -269,4 +270,3 @@ if __name__ == "__main__":
 #    column, a grouping column, and a time column, then save a line chart automatically.
 #    This would help answer questions like how happiness_score changed over time by
 #    region without needing the CodeAgent to write custom plotting code each time.
-
