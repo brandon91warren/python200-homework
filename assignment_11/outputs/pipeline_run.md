@@ -1,0 +1,3 @@
+# Pipeline Run Reflection
+
+The pipeline did not run cleanly on the first try because the OpenAI API key was missing from my environment. The extract task completed successfully, but the transform task failed because the OpenAI client could not authenticate, so the load task did not run. After setting the `OPENAI_API_KEY` environment variable, I reran the pipeline and all three tasks completed successfully. In the Prefect output, I saw extract, transform, and load each finish in a Completed state, with no retries needed on the successful run. The final blob was uploaded to `final/2026-06-16/weather_etl.json` with 21,050 bytes. If I deployed this daily, I would add a scheduled Prefect deployment and alerting for API, OpenAI, or Azure upload failures.
